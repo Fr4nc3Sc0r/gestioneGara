@@ -24,11 +24,21 @@ public class Atleta implements Serializable {
 
     }
 
-    public void saveAtleti(Boolean bool) throws FileNotFoundException, IOException {
+    public void saveAtleti(Boolean bool) throws FileNotFoundException, IOException, ClassNotFoundException {
         if (bool == true) {
+            File file = new File("atleti.dat");
+            boolean fileExists = file.exists();
 
-            FileOutputStream f = new FileOutputStream("atleti.dat", true);
-            ObjectOutputStream fOut = new ObjectOutputStream(f);
+            FileOutputStream f = new FileOutputStream("atleti.dat", false);
+            ObjectOutputStream fOut;
+
+            // Se il file non esiste, crea uno nuovo; se esiste, ricrea da zero
+            if (fileExists) {
+                // Leggi i vecchi dati prima di riscrivere
+                readAtleti();
+            }
+
+            fOut = new ObjectOutputStream(f);
 
             for (int i = 0; i < dimensione; i++) {
                 fOut.writeObject(atleti[i]);
@@ -45,13 +55,14 @@ public class Atleta implements Serializable {
             FileInputStream f = new FileInputStream("atleti.dat");
             ObjectInputStream fIn = new ObjectInputStream(f);
 
-            do {
-                atleti[dimensione] = (Atleta) fIn.readObject();
+            dimensione = 0;
+
+            Object obj;
+            while ((obj = (Atleta) fIn.readObject()) != null) {
+                atleti[dimensione] = (Atleta) obj;
                 System.out.println(atleti[dimensione]);
                 dimensione++;
-
-            } while (fIn.readObject() != null);
-
+            }
             fIn.close();
         } catch (EOFException e) {
             System.err.println(e);
@@ -97,6 +108,10 @@ public class Atleta implements Serializable {
 
     public void setCategoria(String categoria) {
         this.categoria = categoria;
+    }
+
+    public Atleta getAtletaByIndice(int i) {
+        return atleti[i];
     }
 
     @Override

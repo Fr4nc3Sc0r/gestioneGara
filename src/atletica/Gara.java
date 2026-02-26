@@ -4,6 +4,7 @@
  */
 
 import java.time.LocalTime;
+import java.util.Arrays;
 /**
  *
  * @author alit2967
@@ -15,7 +16,9 @@ public class Gara implements Serializable {
     private String nomeGara;
     private String posizione;
     private String dettagli;
-    private LocalTime tempo;
+    private float tempo;
+    Atleta[] partecipanti = new Atleta[100];
+    int dimPartecipanti = 0;
     private Gara[] gare = new Gara[100];
 
     // input e output
@@ -29,9 +32,9 @@ public class Gara implements Serializable {
 
     }
 
-    public Gara(String nomeGara, String dettagli, LocalTime tempo) {
+    public Gara(String nomeGara, String dettagli, int tempo, Atleta partecipante) {
 
-        Atleta[] partecipanti;
+        this.partecipanti[dimPartecipanti] = partecipante;
         this.nomeGara = nomeGara;
         this.dettagli = dettagli;
         this.tempo = tempo;
@@ -41,13 +44,50 @@ public class Gara implements Serializable {
     public void saveGara(Gara gara) throws FileNotFoundException, IOException {
         gare[dimensione] = gara;
         dimensione++;
+    }
+
+    public void saveGara(boolean bool) throws FileNotFoundException, IOException, ClassNotFoundException {
+        File file = new File("gare.dat");
+        boolean fileExist = file.exists();
 
         FileOutputStream f = new FileOutputStream("gara.dat", true);
-        ObjectOutputStream fOut = new ObjectOutputStream(f);
+        ObjectOutputStream fOut;
 
-        fOut.writeObject(gara);
+        if (fileExist) {
+            readGare();
+        }
 
-        f.close();
+        fOut = new ObjectOutputStream(f);
+
+        for (int i = 0; i < dimensione; i++) {
+            fOut.writeObject(gare[i]);
+        }
+        fOut.flush();
+        fOut.close();
+    }
+
+    public void readGare()
+            throws EOFException, FileNotFoundException, IOException, ClassNotFoundException, StreamCorruptedException {
+
+        try {
+            FileInputStream f = new FileInputStream("gare.dat");
+            ObjectInputStream fIn = new ObjectInputStream(f);
+
+            dimensione = 0;
+
+            Object obj;
+            while ((obj = fIn.readObject()) != null) {
+                gare[dimensione] = (Gara) obj;
+                System.out.println(gare[dimensione]);
+                dimensione++;
+            }
+            fIn.close();
+        } catch (EOFException e) {
+            System.err.println(e);
+        } catch (StreamCorruptedException e) {
+            System.err.println(e);
+        }
+
     }
 
     public String getNomeGara() {
@@ -66,12 +106,10 @@ public class Gara implements Serializable {
         this.dettagli = dettagli;
     }
 
-    public LocalTime getTempo() {
-        return tempo;
-    }
-
-    public void setTempo(LocalTime tempo) {
-        this.tempo = tempo;
+    @Override
+    public String toString() {
+        return "Gara [nomeGara=" + nomeGara + ", posizione=" + posizione + ", dettagli=" + dettagli + ", tempo=" + tempo
+                + ", partecipanti=" + Arrays.toString(partecipanti) + "]";
     }
 
 }
